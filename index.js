@@ -9,7 +9,7 @@ app.use(cors())
 const PORT = process.env.PORT || 3000;
 
 // Función para generar la imagen de la tarjeta
-function generateCardBackground() {
+function generateCardBackground() { 
     const canvas = createCanvas(600, 400); // Ancho y alto del lienzo
     const ctx = canvas.getContext('2d');
 
