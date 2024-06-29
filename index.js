@@ -31,7 +31,7 @@ function generateCardBackground() {
 }
 
 // Ruta para generar la imagen de la tarjeta
-app.get('/api/generate-card', async (req, res) => {
+app.get('/', async (req, res) => {
     try {
         const cardBuffer = await generateCardBackground();
         
