@@ -1,17 +1,15 @@
 const express = require('express');
-const { createCanvas, loadImage } = require('canvas');
+const { createCanvas } = require('canvas');
 const cors = require('cors'); 
-const fs = require('fs');
-const path = require('path');
 
 const app = express();
 
-app.use(cors());
+app.use(cors())
 
 const PORT = process.env.PORT || 3000;
 
-// Función para generar la imagen de la tarjeta y devolver la URL
-async function generateCardBackground() {
+// Función para generar la imagen de la tarjeta
+function generateCardBackground() { 
     const canvas = createCanvas(600, 400); // Ancho y alto del lienzo
     const ctx = canvas.getContext('2d');
 
@@ -29,43 +27,24 @@ async function generateCardBackground() {
     ctx.font = '20px Arial'; // Tamaño del subtítulo
     ctx.fillText('TARJETA DE BENEFICIOS', canvas.width / 2, 90); // Posición y texto
 
-    // Generar un nombre único para la imagen
-    const imageName = `card-${Date.now()}.png`;
-    const imagePath = path.join(__dirname, 'public', 'images', imageName);
-
-    // Guardar la imagen en el servidor
-    const out = fs.createWriteStream(imagePath);
-    const stream = canvas.createPNGStream();
-    stream.pipe(out);
-
-    return new Promise((resolve, reject) => {
-        out.on('finish', () => {
-            // Construir la URL completa de la imagen
-            const imageUrl = `http://localhost:${PORT}/images/${imageName}`; // Cambiar según tu configuración de servidor
-            resolve(imageUrl);
-        });
-
-        out.on('error', (err) => {
-            reject(err);
-        });
-    });
+    return canvas.toBuffer(); // Devolver el buffer de la imagen generada
 }
 
-// Ruta para generar la URL de la imagen de la tarjeta
+// Ruta para generar la imagen de la tarjeta
 app.get('/', async (req, res) => {
     try {
-        const imageUrl = await generateCardBackground();
+        const cardBuffer = await generateCardBackground();
+        
+        // Establecer headers
+        res.set('Content-Type', 'image/png'); // Tipo de contenido es imagen PNG
 
-        // Devolver la URL de la imagen como respuesta
-        res.json({ imageUrl });
+        // Enviar la imagen como respuesta
+        res.send(cardBuffer);
     } catch (error) {
         console.error('Error al generar la tarjeta:', error);
         res.status(500).json({ error: 'Error al generar la tarjeta' });
     }
 });
-
-// Servir las imágenes estáticas desde el directorio 'public'
-app.use('/images', express.static(path.join(__dirname, 'public', 'images')));
 
 // Iniciar el servidor
 app.listen(PORT, () => {
